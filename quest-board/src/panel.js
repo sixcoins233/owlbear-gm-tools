@@ -1,14 +1,19 @@
 import OBR from "@owlbear-rodeo/sdk";
-import { CONTROL, META, emptyBoard, groups } from "./shared.js";
+import { CONTROL, META, POPOVER, emptyBoard, groups } from "./shared.js";
 import "./style.css";
 
 const app = document.querySelector("#app");
 const collapsedKey = "quest-board-collapsed";
+const fontKey = "quest-board-font-size";
+const sizeKey = "quest-board-size";
 let role = "PLAYER";
 let board = emptyBoard();
 let showCompleted = localStorage.getItem("quest-board-show-completed") !== "false";
 let collapsed = JSON.parse(localStorage.getItem(collapsedKey) || "{}");
+let fontSize = Math.min(130, Math.max(85, Number(localStorage.getItem(fontKey)) || 100));
 let dragStart;
+let resizeStart;
+let resizeFrame;
 
 const id = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 const escapeHtml = (value) => String(value).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -19,12 +24,15 @@ async function save() {
 }
 
 function render() {
+  app.style.setProperty("--font-scale", fontSize / 100);
   app.innerHTML = `
-    <header id="drag"><img src="./icon.svg" alt=""><div><h1>冒险任务</h1><p>${role === "GM" ? "拖动此处移动 · GM 编辑模式" : "拖动此处移动"}</p></div><button id="hide" title="隐藏任务栏">×</button></header>
+    <header id="drag"><img src="./icon.svg" alt=""><div class="title"><h1>冒险任务</h1><p>${role === "GM" ? "拖动此处移动 · GM 编辑模式" : "拖动此处移动"}</p></div><div class="header-actions"><label title="调整任务文字大小"><span>字号</span><select id="font-size" aria-label="字号"><option value="85">小</option><option value="100">标准</option><option value="115">大</option><option value="130">特大</option></select></label><button id="hide" title="隐藏任务栏">×</button></div></header>
     <div class="filters"><label><input id="completed-filter" type="checkbox" ${showCompleted ? "checked" : ""}> 显示已完成任务</label></div>
     <div class="quest-list">${groups.map(([key, title, symbol]) => groupHtml(key, title, symbol)).join("")}</div>
     <footer>${role === "GM" ? "修改会实时同步给房间内所有玩家" : "任务内容由 GM 管理"}</footer>
+    <button id="resize" title="拖动调整任务栏大小" aria-label="调整任务栏大小"></button>
   `;
+  document.querySelector("#font-size").value = String(fontSize);
   bind();
 }
 
@@ -51,6 +59,11 @@ function findTask(element) {
 }
 
 function bind() {
+  document.querySelector("#font-size").addEventListener("change", (event) => {
+    fontSize = Number(event.target.value);
+    localStorage.setItem(fontKey, String(fontSize));
+    app.style.setProperty("--font-scale", fontSize / 100);
+  });
   document.querySelector("#completed-filter").addEventListener("change", (event) => {
     showCompleted = event.target.checked;
     localStorage.setItem("quest-board-show-completed", String(showCompleted));
@@ -67,6 +80,7 @@ function bind() {
   }));
   if (role === "GM") bindGm();
   bindDrag();
+  bindResize();
 }
 
 function bindGm() {
@@ -102,7 +116,7 @@ function bindGm() {
 function bindDrag() {
   const header = document.querySelector("#drag");
   header.addEventListener("pointerdown", (event) => {
-    if (event.target.closest("button")) return;
+    if (event.target.closest(".header-actions")) return;
     dragStart = { x: event.screenX, y: event.screenY };
     header.setPointerCapture(event.pointerId);
     header.classList.add("dragging");
@@ -115,6 +129,42 @@ function bindDrag() {
     if (Math.abs(movement.dx) + Math.abs(movement.dy) > 3) {
       await OBR.broadcast.sendMessage(CONTROL, movement, { destination: "LOCAL" });
     }
+  });
+}
+
+function resize(width, height) {
+  const next = {
+    width: Math.min(640, Math.max(260, Math.round(width))),
+    height: Math.min(850, Math.max(260, Math.round(height))),
+  };
+  localStorage.setItem(sizeKey, JSON.stringify(next));
+  Promise.all([
+    OBR.popover.setWidth(POPOVER, next.width),
+    OBR.popover.setHeight(POPOVER, next.height),
+  ]);
+}
+
+function bindResize() {
+  const handle = document.querySelector("#resize");
+  handle.addEventListener("pointerdown", (event) => {
+    resizeStart = { x: event.screenX, y: event.screenY, width: innerWidth, height: innerHeight };
+    handle.setPointerCapture(event.pointerId);
+  });
+  handle.addEventListener("pointermove", (event) => {
+    if (!resizeStart || resizeFrame) return;
+    const start = resizeStart;
+    const { screenX, screenY } = event;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = null;
+      resize(start.width + screenX - start.x, start.height + screenY - start.y);
+    });
+  });
+  handle.addEventListener("pointerup", (event) => {
+    if (!resizeStart) return;
+    if (resizeFrame) cancelAnimationFrame(resizeFrame);
+    resizeFrame = null;
+    resize(resizeStart.width + event.screenX - resizeStart.x, resizeStart.height + event.screenY - resizeStart.y);
+    resizeStart = null;
   });
 }
 

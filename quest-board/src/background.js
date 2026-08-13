@@ -2,16 +2,19 @@ import OBR from "@owlbear-rodeo/sdk";
 import { CONTROL, POPOVER } from "./shared.js";
 
 const positionKey = "quest-board-position";
+const sizeKey = "quest-board-size";
 const visibleKey = "quest-board-visible";
 let position = JSON.parse(localStorage.getItem(positionKey) || "null") || { left: 14, top: 120 };
+let size = JSON.parse(localStorage.getItem(sizeKey) || "null") || { width: 340, height: 650 };
 let visible = localStorage.getItem(visibleKey) !== "false";
 
 async function open() {
+  size = JSON.parse(localStorage.getItem(sizeKey) || "null") || size;
   await OBR.popover.open({
     id: POPOVER,
     url: "/owlbear-gm-tools/quest-board/panel.html",
-    width: 340,
-    height: 650,
+    width: size.width,
+    height: size.height,
     anchorReference: "POSITION",
     anchorPosition: position,
     anchorOrigin: { horizontal: "LEFT", vertical: "TOP" },
