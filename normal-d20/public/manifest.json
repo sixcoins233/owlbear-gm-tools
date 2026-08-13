@@ -1,15 +1,15 @@
 {
   "name": "正态分布 d20",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "manifest_version": 1,
   "description": "可由 GM 管理权限、公开状态及分布参数的正态 d20 骰子。",
   "author": "Owlbear GM Tools",
-  "icon": "icon.svg",
-  "background_url": "background.html",
+  "icon": "/owlbear-gm-tools/normal-d20/icon.svg",
+  "background_url": "/owlbear-gm-tools/normal-d20/background.html",
   "action": {
     "title": "正态 d20",
-    "icon": "icon.svg",
-    "popover": "index.html",
+    "icon": "/owlbear-gm-tools/normal-d20/icon.svg",
+    "popover": "/owlbear-gm-tools/normal-d20/index.html",
     "height": 700,
     "width": 380
   }

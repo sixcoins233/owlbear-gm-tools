@@ -9,7 +9,7 @@ let visible = localStorage.getItem(visibleKey) !== "false";
 async function open() {
   await OBR.popover.open({
     id: POPOVER,
-    url: "panel.html",
+    url: "/owlbear-gm-tools/quest-board/panel.html",
     width: 340,
     height: 650,
     anchorReference: "POSITION",
