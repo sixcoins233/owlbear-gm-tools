@@ -1,0 +1,16 @@
+{
+  "name": "悬浮任务栏",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "GM 可编辑的主线、支线和角色任务悬浮栏。",
+  "author": "Owlbear GM Tools",
+  "icon": "icon.svg",
+  "background_url": "background.html",
+  "action": {
+    "title": "任务栏显示设置",
+    "icon": "icon.svg",
+    "popover": "index.html",
+    "height": 220,
+    "width": 300
+  }
+}

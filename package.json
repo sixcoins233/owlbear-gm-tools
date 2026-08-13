@@ -1,0 +1,7 @@
+{
+  "name": "owlbear-static-extensions",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build"
+  }
+}
