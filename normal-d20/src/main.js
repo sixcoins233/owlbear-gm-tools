@@ -45,7 +45,7 @@ function slider(id, label, min, max, step, value) {
 function render() {
   const allowed = role === "GM" || settings.allowed.includes(OBR.player.id);
   app.innerHTML = `
-    <header><img src="./icon.svg" alt=""><div><h1>正态 d20</h1><p>${role === "GM" ? "GM 控制台" : name}</p></div><span class="status">${settings.publicRolls ? "公开" : "仅 GM"}</span></header>
+    <header><img src="./icon.svg" alt=""><div><h1>Normal Dice</h1><p>${role === "GM" ? "GM 控制台" : name}</p></div><span class="status">${settings.publicRolls ? "公开" : "仅 GM"}</span></header>
     ${allowed ? `<section class="dice-zone">
       <div id="die" class="die"><span>20</span></div>
       <div id="result" class="result">调整分布，然后投掷</div>
