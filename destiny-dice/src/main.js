@@ -28,7 +28,7 @@ function render() {
     <section class="pool"><div class="section-title"><h2>组合骰池</h2><button id="clear">清空</button></div><div class="dice-grid">${diceTypes.map(diceRow).join("")}</div><div class="formula"><span id="formula">${formula()}</span><b id="dice-total">${totalDice()} 枚</b></div></section>
     <section><h2>骰子外观</h2><div class="themes">${themes.map(themeCard).join("")}</div></section>
     ${role === "GM" ? gmSettings() : ""}
-    <section class="roll-control"><button id="roll">投掷命运骰</button><p id="status">结果将由 GM 裁定，并同步显示给所有人。</p></section>
+    <section class="roll-control"><button id="roll">投掷命运骰</button><p id="status">投掷结果将同步显示给所有人。</p></section>
   `;
   bind();
 }
@@ -102,7 +102,7 @@ async function roll() {
   if (!pool.length) { status.textContent = "请至少选择一枚骰子。"; return; }
   if (totalDice() > 100) { status.textContent = "单次最多投掷 100 枚骰子。"; return; }
   if (role !== "GM" && !party.some((player) => player.role === "GM")) {
-    status.textContent = "GM 当前不在线，无法进行隐藏范围裁定。"; return;
+    status.textContent = "当前无法完成投掷，请稍后重试。"; return;
   }
   status.textContent = "命运正在回应…";
   await OBR.broadcast.sendMessage(REQUEST, { id: crypto.randomUUID(), kind: "request", dice: pool, theme }, { destination: "ALL" });

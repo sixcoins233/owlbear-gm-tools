@@ -1,8 +1,8 @@
 {
   "name": "Destiny & Dice",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "manifest_version": 1,
-  "description": "自由组合骰池、GM 隐藏范围裁定和全桌同步的动态命运骰。",
+  "description": "自由组合骰池、动态主题和全桌同步动画的命运骰。",
   "author": "Owlbear GM Tools",
   "icon": "/owlbear-gm-tools/destiny-dice/icon.svg",
   "background_url": "/owlbear-gm-tools/destiny-dice/background.html",
