@@ -5,11 +5,13 @@ import "./style.css";
 const app = document.querySelector("#app");
 const countsKey = "destiny-dice-counts";
 const themeKey = "destiny-dice-theme";
+const modifierKey = "destiny-dice-modifier";
 let role = "PLAYER";
 let selfConnection;
 let party = [];
 let counts = { ...Object.fromEntries(diceTypes.map((sides) => [sides, 0])), ...JSON.parse(localStorage.getItem(countsKey) || "{}") };
 let theme = localStorage.getItem(themeKey) || "vortex";
+let modifier = Math.min(999, Math.max(-999, Number(localStorage.getItem(modifierKey)) || 0));
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, Number(value) || 0));
 counts = Object.fromEntries(diceTypes.map((sides) => [sides, clamp(counts[sides], 0, 50)]));
@@ -19,13 +21,15 @@ function totalDice() {
 }
 
 function formula() {
-  return diceTypes.filter((sides) => counts[sides]).map((sides) => `${counts[sides]}d${sides}`).join(" + ") || "请选择骰子";
+  const pool = diceTypes.filter((sides) => counts[sides]).map((sides) => `${counts[sides]}d${sides}`).join(" + ");
+  if (!pool) return "请选择骰子";
+  return modifier ? `${pool} ${modifier > 0 ? "+" : "−"} ${Math.abs(modifier)}` : pool;
 }
 
 function render() {
   app.innerHTML = `
     <header><img src="./icon.svg" alt=""><div><h1>Destiny &amp; Dice</h1><p>让命运在桌面上显形</p></div><span>${role === "GM" ? "GM" : "PLAYER"}</span></header>
-    <section class="pool"><div class="section-title"><h2>组合骰池</h2><button id="clear">清空</button></div><div class="dice-grid">${diceTypes.map(diceRow).join("")}</div><div class="formula"><span id="formula">${formula()}</span><b id="dice-total">${totalDice()} 枚</b></div></section>
+    <section class="pool"><div class="section-title"><h2>组合骰池</h2><button id="clear">清空</button></div><div class="dice-grid">${diceTypes.map(diceRow).join("")}</div><label class="modifier"><span>额外加值</span><input id="modifier" type="number" min="-999" max="999" value="${modifier}" aria-label="额外加值"></label><div class="formula"><span id="formula">${formula()}</span><b id="dice-total">${totalDice()} 枚</b></div></section>
     <section><h2>骰子外观</h2><div class="themes">${themes.map(themeCard).join("")}</div></section>
     ${role === "GM" ? gmSettings() : ""}
     <section class="roll-control"><button id="roll">投掷命运骰</button><p id="status">投掷结果将同步显示给所有人。</p></section>
@@ -89,6 +93,12 @@ function bind() {
     counts = Object.fromEntries(diceTypes.map((sides) => [sides, 0]));
     render(); updatePool();
   });
+  document.querySelector("#modifier").addEventListener("change", (event) => {
+    modifier = Math.min(999, Math.max(-999, Math.trunc(Number(event.target.value)) || 0));
+    event.target.value = modifier;
+    localStorage.setItem(modifierKey, String(modifier));
+    updatePool();
+  });
   document.querySelectorAll('[name="theme"]').forEach((radio) => radio.addEventListener("change", () => {
     theme = radio.value; localStorage.setItem(themeKey, theme);
   }));
@@ -105,7 +115,7 @@ async function roll() {
     status.textContent = "当前无法完成投掷，请稍后重试。"; return;
   }
   status.textContent = "命运正在回应…";
-  await OBR.broadcast.sendMessage(REQUEST, { id: crypto.randomUUID(), kind: "request", dice: pool, theme }, { destination: "ALL" });
+  await OBR.broadcast.sendMessage(REQUEST, { id: crypto.randomUUID(), kind: "request", dice: pool, modifier, theme }, { destination: "ALL" });
 }
 
 OBR.onReady(async () => {

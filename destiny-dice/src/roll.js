@@ -32,6 +32,28 @@ if (!result) {
   });
   const total = document.createElement("div");
   total.className = "grand-total";
-  total.innerHTML = `<span>总计</span><strong>${result.total}</strong>`;
+  const label = document.createElement("span");
+  label.textContent = "总计";
+  total.append(label);
+  if (result.modifier) {
+    const equation = document.createElement("div");
+    equation.className = "equation";
+    const diceValue = document.createElement("b");
+    diceValue.textContent = result.diceTotal;
+    const sign = document.createElement("em");
+    sign.textContent = result.modifier > 0 ? "+" : "−";
+    const bonus = document.createElement("b");
+    bonus.textContent = Math.abs(result.modifier);
+    const equals = document.createElement("em");
+    equals.textContent = "=";
+    const final = document.createElement("strong");
+    final.textContent = result.total;
+    equation.append(diceValue, sign, bonus, equals, final);
+    total.append(equation);
+  } else {
+    const value = document.createElement("strong");
+    value.textContent = result.total;
+    total.append(value);
+  }
   stage.append(heading, tray, total);
 }

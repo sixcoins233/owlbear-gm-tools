@@ -43,6 +43,8 @@ async function resolveRequest(event) {
   if (handled.size > 200) handled.clear();
   const rules = ranges();
   const dice = pool.map((sides) => ({ sides, value: random(rules[sides].min, rules[sides].max) }));
+  const modifier = Math.min(999, Math.max(-999, Math.trunc(Number(request.modifier)) || 0));
+  const diceTotal = dice.reduce((sum, die) => sum + die.value, 0);
   await OBR.broadcast.sendMessage(RESULT, {
     kind: "result",
     requestId: request.id,
@@ -50,7 +52,9 @@ async function resolveRequest(event) {
     actorId: roller.id,
     theme: themeIds.includes(request.theme) ? request.theme : "vortex",
     dice,
-    total: dice.reduce((sum, die) => sum + die.value, 0),
+    diceTotal,
+    modifier,
+    total: diceTotal + modifier,
     time: Date.now(),
   }, { destination: "ALL" });
 }
