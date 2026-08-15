@@ -8,6 +8,27 @@ let role = "PLAYER";
 let state = emptyState();
 let message = "";
 
+function fetchVideoInfo(track) {
+  return new Promise((resolve, reject) => {
+    const callback = `__biliMusic${crypto.randomUUID().replaceAll("-", "")}`;
+    const script = document.createElement("script");
+    const done = (error, value) => {
+      clearTimeout(timer); delete window[callback]; script.remove();
+      error ? reject(error) : resolve(value);
+    };
+    window[callback] = (result) => {
+      if (result?.code !== 0) { done(new Error("无法读取视频信息")); return; }
+      const page = result.data.pages?.[Math.max(0, track.page - 1)];
+      done(null, { title: result.data.title, duration: Number(page?.duration || result.data.duration) || 0 });
+    };
+    script.referrerPolicy = "no-referrer";
+    script.src = `https://api.bilibili.com/x/web-interface/view?bvid=${encodeURIComponent(track.bvid)}&jsonp=jsonp&callback=${callback}`;
+    script.onerror = () => done(new Error("无法读取视频信息"));
+    const timer = setTimeout(() => done(new Error("读取视频信息超时")), 8000);
+    document.head.append(script);
+  });
+}
+
 function readFavorites() {
   try { return JSON.parse(localStorage.getItem(favoritesKey) || "[]"); }
   catch { return []; }
@@ -26,6 +47,19 @@ async function save(next = state) {
   await OBR.room.setMetadata({ [META]: state });
 }
 
+async function enrichPlaylist() {
+  let changed = false;
+  await Promise.all(state.playlist.filter((track) => !track.duration).map(async (track) => {
+    try {
+      const info = await fetchVideoInfo(track);
+      track.duration = info.duration;
+      if (track.title.startsWith(track.bvid) && info.title) track.title = info.title.slice(0, 100);
+      changed ||= Boolean(info.duration);
+    } catch { /* 保留播放器自身循环作为兜底 */ }
+  }));
+  if (changed) { await save(); render(); }
+}
+
 function statusLabel() {
   if (!currentTrack()) return "尚未选择音乐";
   return state.playback.status === "PLAYING" ? "正在播放" : state.playback.status === "PAUSED" ? "已暂停" : "已停止";
@@ -37,7 +71,7 @@ function render() {
   app.innerHTML = `
     <header class="manager-header"><img src="./icon.svg" alt=""><div><h1>Bilibili Music</h1><p>${role === "GM" ? "GM 播放控制" : "房间共享歌单"}</p></div><span>${role}</span></header>
     <section class="now"><small>${statusLabel()}</small><h2>${escapeHtml(track?.title || "等待 GM 播放")}</h2><p>${track ? escapeHtml(`${track.bvid}${track.page > 1 ? ` · P${track.page}` : ""}`) : "播放器小窗会在桌面左侧显示"}</p>
-      <button id="show-player" class="secondary">显示播放器小窗</button>
+      <button id="show-player" class="secondary">显示音量控制器</button>
     </section>
     ${role === "GM" ? gmControls(track) : ""}
     <section><div class="section-title"><h2>房间歌单</h2><b>${state.playlist.length}/${MAX_TRACKS}</b></div>
@@ -97,7 +131,13 @@ function bind() {
     event.preventDefault();
     try {
       if (state.playlist.length >= MAX_TRACKS) throw new Error(`歌单最多保存 ${MAX_TRACKS} 首。`);
-      const track = parseTrack(document.querySelector("#track-url").value, document.querySelector("#track-title").value);
+      const customTitle = document.querySelector("#track-title").value.trim();
+      const track = parseTrack(document.querySelector("#track-url").value, customTitle);
+      try {
+        const info = await fetchVideoInfo(track);
+        track.duration = info.duration;
+        if (!customTitle && info.title) track.title = info.title.slice(0, 100);
+      } catch { track.duration = 0; }
       state.playlist.push(track);
       await save();
       message = "已加入歌单。";
@@ -150,6 +190,7 @@ OBR.onReady(async () => {
   role = await OBR.player.getRole();
   state = normalizeState((await OBR.room.getMetadata())[META]);
   render();
+  if (role === "GM") enrichPlaylist();
   OBR.room.onMetadataChange((metadata) => {
     const next = normalizeState(metadata[META]);
     if (next.updatedAt !== state.updatedAt) { state = next; render(); }

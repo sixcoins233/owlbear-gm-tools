@@ -1,6 +1,6 @@
 {
   "name": "Bilibili Music",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "manifest_version": 1,
   "description": "由 GM 管理的 Bilibili 房间歌单、同步播放与本地收藏。",
   "author": "Owlbear GM Tools",

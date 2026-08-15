@@ -1,7 +1,8 @@
 export const ID = "tools.horn.bilibili-music";
 export const META = `${ID}/state`;
 export const CONTROL = `${ID}/control`;
-export const PLAYER = `${ID}/player`;
+export const PLAYER = `${ID}/player-v2`;
+export const LEGACY_PLAYER = `${ID}/player`;
 export const MAX_TRACKS = 25;
 
 export const emptyState = () => ({
@@ -47,13 +48,14 @@ export function currentPosition(playback, now = Date.now()) {
   return base + Math.max(0, now - (Number(playback.startedAt) || now)) / 1000;
 }
 
-export function embedUrl(track, position = 0, muted = false) {
+export function embedUrl(track, position = 0, muted = false, loop = true) {
   const query = new URLSearchParams({
     bvid: track.bvid,
     p: String(track.page || 1),
     autoplay: "1",
     muted: muted ? "1" : "0",
     danmaku: "0",
+    loop: loop ? "1" : "0",
     t: String(Math.floor(Math.max(0, position))),
   });
   return `https://player.bilibili.com/player.html?${query}`;
