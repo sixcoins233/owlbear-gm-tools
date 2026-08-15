@@ -8,6 +8,16 @@ importers:
 
   .: {}
 
+  bilibili-music:
+    dependencies:
+      '@owlbear-rodeo/sdk':
+        specifier: ^3.1.0
+        version: 3.1.0
+    devDependencies:
+      vite:
+        specifier: ^8.2.1
+        version: 8.2.1
+
   destiny-dice:
     dependencies:
       '@owlbear-rodeo/sdk':

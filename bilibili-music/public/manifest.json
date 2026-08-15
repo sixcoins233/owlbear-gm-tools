@@ -1,0 +1,22 @@
+{
+  "name": "Bilibili Music",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "由 GM 管理的 Bilibili 房间歌单、同步播放与本地收藏。",
+  "author": "Owlbear GM Tools",
+  "icon": "/owlbear-gm-tools/bilibili-music/icon.svg",
+  "background_url": "/owlbear-gm-tools/bilibili-music/background.html",
+  "permissions": [
+    {
+      "name": "autoplay",
+      "reason": "在用户启用声音后，让房间中的 Bilibili 嵌入播放器继续播放。"
+    }
+  ],
+  "action": {
+    "title": "Bilibili Music",
+    "icon": "/owlbear-gm-tools/bilibili-music/icon.svg",
+    "popover": "/owlbear-gm-tools/bilibili-music/index.html",
+    "height": 720,
+    "width": 440
+  }
+}

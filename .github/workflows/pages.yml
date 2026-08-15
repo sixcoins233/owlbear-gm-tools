@@ -30,10 +30,11 @@ jobs:
       - run: pnpm build
       - name: Assemble static site
         run: |
-          mkdir -p site/normal-d20 site/quest-board site/destiny-dice
+          mkdir -p site/normal-d20 site/quest-board site/destiny-dice site/bilibili-music
           cp -r normal-d20/dist/. site/normal-d20/
           cp -r quest-board/dist/. site/quest-board/
           cp -r destiny-dice/dist/. site/destiny-dice/
+          cp -r bilibili-music/dist/. site/bilibili-music/
           cp site-index.html site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
