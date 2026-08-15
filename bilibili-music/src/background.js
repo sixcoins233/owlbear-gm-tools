@@ -11,7 +11,7 @@ async function open() {
     id: PLAYER,
     url: "/owlbear-gm-tools/bilibili-music/player.html",
     width: 430,
-    height: 338,
+    height: 126,
     anchorReference: "POSITION",
     anchorPosition: position,
     anchorOrigin: { horizontal: "LEFT", vertical: "TOP" },

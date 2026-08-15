@@ -50,10 +50,9 @@ function render() {
 }
 
 function gmControls(track) {
-  const playing = state.playback.status === "PLAYING";
   return `
     <section class="transport">
-      <div class="transport-buttons"><button data-control="previous" title="上一首">⏮</button><button data-control="toggle" class="primary" ${track ? "" : "disabled"}>${playing ? "暂停" : "继续"}</button><button data-control="next" title="下一首">⏭</button><button data-control="stop" title="停止">■</button></div>
+      <div class="transport-buttons"><button data-control="previous" title="上一首">⏮</button><button data-control="toggle" class="primary" ${track ? "" : "disabled"}>播放/暂停</button><button data-control="next" title="下一首">⏭</button><button data-control="stop" title="停止">■</button></div>
       <form id="add-track"><label>视频链接或 BV 号<input id="track-url" required maxlength="300" placeholder="https://www.bilibili.com/video/BV..." /></label><label>显示名称（可选）<input id="track-title" maxlength="100" placeholder="例如：酒馆背景音乐" /></label><button class="primary" ${state.playlist.length >= MAX_TRACKS ? "disabled" : ""}>加入歌单</button></form>
     </section>`;
 }
